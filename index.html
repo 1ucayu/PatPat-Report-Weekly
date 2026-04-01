@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -16,28 +16,23 @@
         <p class="eyebrow">Fulfillment Email Dashboard</p>
         <h1>Multi-Week Performance Report</h1>
         <p class="hero-copy">
-          Upload weekly CSV reports, keep historical weeks in the browser, switch any week on demand,
+          Load weekly CSV reports from the repository data directory, switch any week on demand,
           and compare the current week against the prior week with WoW performance context.
         </p>
       </div>
       <div class="upload-card">
         <div class="control-group">
-          <label class="upload-button" for="csvInput">Upload CSV</label>
-          <input id="csvInput" type="file" accept=".csv,text/csv" multiple>
-        </div>
-        <div class="control-group">
           <label class="control control-full">
             <span>Week</span>
             <select id="weekSelect">
-              <option value="">No week loaded</option>
+              <option value="">Loading weeks...</option>
             </select>
           </label>
         </div>
-        <div class="action-row">
+        <div class="action-row action-row-single">
           <button id="exportWeekButton" class="secondary-button" type="button">Export Current Week</button>
-          <button id="clearDataButton" class="danger-button" type="button">Clear All Data</button>
         </div>
-        <p id="fileMeta" class="file-meta">No file loaded</p>
+        <p id="fileMeta" class="file-meta">Loading repository data...</p>
       </div>
     </header>
 
@@ -47,11 +42,11 @@
           <div>
             <p class="section-kicker">Section 01</p>
             <h2>Weekly Overview</h2>
-            <p id="overviewContext" class="section-caption">Select or upload a week to view KPI summary and WoW movement.</p>
+            <p id="overviewContext" class="section-caption">Select a week to view KPI summary and WoW movement.</p>
           </div>
         </div>
         <div id="overviewGrid" class="metric-grid empty-state-grid">
-          <div class="empty-state">Upload one or more CSV files to populate weekly KPIs.</div>
+          <div class="empty-state">Loading weekly KPI data from the repository.</div>
         </div>
       </section>
 
@@ -80,7 +75,7 @@
             <thead></thead>
             <tbody>
               <tr>
-                <td class="empty-cell">Upload a CSV file to view flow-level performance.</td>
+                <td class="empty-cell">Loading repository-backed flow performance.</td>
               </tr>
             </tbody>
           </table>
@@ -142,7 +137,7 @@
           </div>
         </div>
         <div id="trendGrid" class="chart-grid trends-grid">
-          <div class="chart-card empty-chart">Upload at least one week to see trend lines.</div>
+          <div class="chart-card empty-chart">Loading weekly trends from the repository.</div>
         </div>
       </section>
     </main>
