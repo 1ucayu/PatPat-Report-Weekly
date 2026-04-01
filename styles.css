@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #eef2f5;
   --panel: #ffffff;
   --panel-soft: #f7f9fb;
@@ -465,4 +465,7 @@ tbody tr:hover {
     align-items: start;
     flex-direction: column;
   }
+}
+.action-row-single {
+  grid-template-columns: 1fr;
 }
