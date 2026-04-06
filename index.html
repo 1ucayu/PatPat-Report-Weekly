@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles_updated.css">
 </head>
 <body>
   <div class="page-shell">
@@ -16,16 +16,22 @@
         <p class="eyebrow">Fulfillment Email Dashboard</p>
         <h1>Multi-Week Performance Report</h1>
         <p class="hero-copy">
-          Load weekly CSV reports from the repository data directory, switch any week on demand,
-          and compare the current week against the prior week with WoW performance context.
+          Compare any selected week against another week, review KPI movement at a glance,
+          and customize the flow table layout for faster weekly reporting.
         </p>
       </div>
       <div class="upload-card">
-        <div class="control-group">
-          <label class="control control-full">
-            <span>Week</span>
+        <div class="control-grid control-grid-hero">
+          <label class="control">
+            <span>Current Week</span>
             <select id="weekSelect">
               <option value="">Loading weeks...</option>
+            </select>
+          </label>
+          <label class="control">
+            <span>Compare Week</span>
+            <select id="compareWeekSelect">
+              <option value="">Auto prior week</option>
             </select>
           </label>
         </div>
@@ -42,7 +48,7 @@
           <div>
             <p class="section-kicker">Section 01</p>
             <h2>Weekly Overview</h2>
-            <p id="overviewContext" class="section-caption">Select a week to view KPI summary and WoW movement.</p>
+            <p id="overviewContext" class="section-caption">Choose current and comparison weeks.</p>
           </div>
         </div>
         <div id="overviewGrid" class="metric-grid empty-state-grid">
@@ -51,25 +57,38 @@
       </section>
 
       <section class="panel">
-        <div class="section-head">
+        <div class="section-head section-head-stack">
           <div>
             <p class="section-kicker">Section 02</p>
             <h2>Flow Performance</h2>
-            <p id="flowContext" class="section-caption">Current week flow table with prior-week flow WoW comparison.</p>
+            <p id="flowContext" class="section-caption">Filter flows and compare WoW movement.</p>
           </div>
-          <div class="toolbar">
+          <div class="toolbar toolbar-wrap">
             <label class="control">
               <span>Search Flow</span>
               <input id="flowSearch" type="search" placeholder="Search flow name">
             </label>
             <label class="control">
-              <span>Filter Trigger</span>
-              <select id="triggerFilter">
-                <option value="">All triggers</option>
+              <span>Filter Flow</span>
+              <select id="flowFilter">
+                <option value="">All flows</option>
               </select>
             </label>
+            <button id="toggleColumnsButton" class="secondary-button" type="button">Customize Columns</button>
           </div>
         </div>
+
+        <div id="columnPanel" class="column-panel hidden">
+          <div class="column-panel-head">
+            <div>
+              <h3>Table Columns</h3>
+              <p class="section-caption">Check to show columns. Drag chips to change left-right order.</p>
+            </div>
+            <button id="resetColumnsButton" class="secondary-button" type="button">Reset</button>
+          </div>
+          <div id="columnChips" class="column-chips"></div>
+        </div>
+
         <div class="table-wrap">
           <table id="flowTable">
             <thead></thead>
@@ -87,7 +106,7 @@
           <div>
             <p class="section-kicker">Section 03</p>
             <h2>Contribution Analysis</h2>
-            <p class="section-caption">Contribution share is based on the selected week and current filter set.</p>
+            <p class="section-caption">Contribution share is based on the selected current week and active flow filter.</p>
           </div>
         </div>
         <div class="chart-grid contribution-grid">
@@ -111,7 +130,7 @@
           <div>
             <p class="section-kicker">Section 04</p>
             <h2>Efficiency Analysis</h2>
-            <p class="section-caption">Bubble charts use the selected week and current filter set.</p>
+            <p class="section-caption">Bubble charts use the selected current week and active flow filter.</p>
           </div>
         </div>
         <div class="chart-grid efficiency-grid">
@@ -133,7 +152,7 @@
           <div>
             <p class="section-kicker">Section 05</p>
             <h2>Weekly Trends</h2>
-            <p class="section-caption">Trend lines are ordered by parsed week number, not string sort order.</p>
+            <p id="trendContext" class="section-caption">All loaded weeks, with current and compare weeks highlighted.</p>
           </div>
         </div>
         <div id="trendGrid" class="chart-grid trends-grid">
@@ -143,6 +162,6 @@
     </main>
   </div>
 
-  <script src="./app.js"></script>
+  <script src="./app_updated.js"></script>
 </body>
 </html>
