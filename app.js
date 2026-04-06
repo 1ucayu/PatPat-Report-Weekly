@@ -1,5 +1,5 @@
 const MANIFEST_PATH = "./data/manifest.json";
-const STORAGE_KEY = "fulfillmentDashboardColumns.v2";
+const STORAGE_KEY = "fulfillmentDashboardColumns.v3";
 
 const overviewMetrics = [
   { label: "发送数", key: "sendCount", type: "number", inverse: false },
@@ -158,11 +158,15 @@ function normalizeManifestEntry(entry) {
     if (!weekLabel) return null;
     return { weekLabel, fileName: `${weekLabel}.csv`, path: `./data/${weekLabel}.csv` };
   }
+
   if (!entry || typeof entry !== "object") return null;
 
-  const weekLabel = normalizeWeekLabel(entry.week || entry.label || entry.name || entry.file || entry.filename || "");
+  const weekLabel = normalizeWeekLabel(
+    entry.week || entry.label || entry.name || entry.file || entry.filename || ""
+  );
   const fileName = normalizeFileName(entry.file || entry.filename || `${weekLabel}.csv`);
   if (!weekLabel || !fileName) return null;
+
   return {
     weekLabel,
     fileName,
@@ -196,6 +200,7 @@ function buildWeekData({ rows, csvText, weekLabel, fileName }) {
       if (!detailHasRevenue && revenue === null && summary.revenue !== null) {
         revenue = (safeDivide(row.clickCount, totalClicks) || 0) * summary.revenue;
       }
+
       if (!detailHasOrders && orderUv === null && summary.orderUv !== null) {
         orderUv = (safeDivide(row.openCount, totalOpens) || 0) * summary.orderUv;
       }
@@ -217,7 +222,14 @@ function buildWeekData({ rows, csvText, weekLabel, fileName }) {
     }
   }
 
-  return { weekLabel, fileName, rawCsv: csvText, summary, detailRows, allocationNotes };
+  return {
+    weekLabel,
+    fileName,
+    rawCsv: csvText,
+    summary,
+    detailRows,
+    allocationNotes,
+  };
 }
 
 function hydrateCurrentWeek() {
@@ -239,23 +251,33 @@ function populateWeekSelectors() {
     return;
   }
 
-  currentSelect.innerHTML = weeks.map((label) => `<option value="${escapeAttribute(label)}">${escapeHtml(label)}</option>`).join("");
-  currentSelect.value = state.selectedWeek;
-
-  compareSelect.innerHTML = '<option value="">No comparison</option>' + weeks
-    .filter((label) => label !== state.selectedWeek)
+  currentSelect.innerHTML = weeks
     .map((label) => `<option value="${escapeAttribute(label)}">${escapeHtml(label)}</option>`)
     .join("");
-  compareSelect.value = state.compareWeek && state.compareWeek !== state.selectedWeek ? state.compareWeek : "";
+  currentSelect.value = state.selectedWeek;
+
+  compareSelect.innerHTML =
+    '<option value="">No comparison</option>' +
+    weeks
+      .filter((label) => label !== state.selectedWeek)
+      .map((label) => `<option value="${escapeAttribute(label)}">${escapeHtml(label)}</option>`)
+      .join("");
+
+  compareSelect.value =
+    state.compareWeek && state.compareWeek !== state.selectedWeek ? state.compareWeek : "";
 }
 
 function populateFlowFilter() {
   const rows = state.currentWeek?.detailRows || [];
-  const flows = [...new Set(rows.map((row) => row.flow).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const flows = [...new Set(rows.map((row) => row.flow).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b)
+  );
   const select = document.getElementById("flowFilter");
-  select.innerHTML = '<option value="">All flows</option>' + flows
-    .map((flow) => `<option value="${escapeAttribute(flow)}">${escapeHtml(flow)}</option>`)
-    .join("");
+
+  select.innerHTML =
+    '<option value="">All flows</option>' +
+    flows.map((flow) => `<option value="${escapeAttribute(flow)}">${escapeHtml(flow)}</option>`).join("");
+
   if (state.flowFilterValue && !flows.includes(state.flowFilterValue)) {
     state.flowFilterValue = "";
   }
@@ -295,6 +317,7 @@ function enrichFlowWow(currentRow, priorRow, hasPriorWeek) {
 
 function render() {
   renderMeta();
+  renderHeaderSummary();
   renderOverview();
   renderFlowTable();
   renderContributionCharts();
@@ -312,6 +335,13 @@ function renderMeta() {
     : state.statusMessage;
 }
 
+function renderHeaderSummary() {
+  const summaryEl = document.getElementById("headerSummary");
+  const current = state.currentWeek?.weekLabel || "--";
+  const compare = state.priorWeek?.weekLabel || "--";
+  summaryEl.textContent = `Current Period: ${current} ｜ Compare Period: ${compare} ｜ Source: Repository CSV`;
+}
+
 function renderOverview() {
   const container = document.getElementById("overviewGrid");
   const context = document.getElementById("overviewContext");
@@ -326,44 +356,31 @@ function renderOverview() {
     ? `Current: ${state.currentWeek.weekLabel} · Compare: ${state.priorWeek.weekLabel}`
     : `Current: ${state.currentWeek.weekLabel}`;
 
-  container.innerHTML = overviewMetrics.map((metric) => {
-    const currentValue = state.currentWeek.summary[metric.key];
-    const priorValue = state.priorWeek?.summary ? state.priorWeek.summary[metric.key] : null;
+  container.innerHTML = overviewMetrics
+    .map((metric) => {
+      const currentValue = state.currentWeek.summary[metric.key];
+      const priorValue = state.priorWeek?.summary ? state.priorWeek.summary[metric.key] : null;
+      const wow = buildWowObject(
+        currentValue,
+        priorValue,
+        metric.type,
+        metric.inverse,
+        Boolean(state.priorWeek),
+        Boolean(state.priorWeek?.summary)
+      );
 
-    const wow = buildWowObject(
-      currentValue,
-      priorValue,
-      metric.type,
-      metric.inverse,
-      Boolean(state.priorWeek),
-      Boolean(state.priorWeek?.summary)
-    );
-
-    return `
-      <article class="metric-card compact">
-        <p class="metric-label">${escapeHtml(metric.label)}</p>
-
-        <div class="metric-main-row">
-          <div class="metric-values">
-            <div class="metric-current">
-              <span class="metric-current-label">Current</span>
-              <span class="metric-current-value">${escapeHtml(formatValue(currentValue, metric.type))}</span>
-            </div>
-
-            <div class="metric-compare">
-              <span class="metric-compare-label">Compare</span>
-              <span class="metric-compare-value">${escapeHtml(formatValue(priorValue, metric.type))}</span>
-            </div>
-          </div>
-
-          <div class="metric-wow-side ${wow.className}">
+      return `
+        <article class="metric-card">
+          <p class="metric-label">${escapeHtml(metric.label)}</p>
+          <p class="metric-value">${escapeHtml(formatValue(currentValue, metric.type))}</p>
+          <div class="metric-wow ${wow.className}">
             <span class="metric-wow-arrow">${escapeHtml(wow.arrow)}</span>
             <span class="metric-wow-value">${escapeHtml(wow.pctOnlyLabel)}</span>
           </div>
-        </div>
-      </article>
-    `;
-  }).join("");
+        </article>
+      `;
+    })
+    .join("");
 }
 
 function renderFlowTable() {
@@ -373,7 +390,7 @@ function renderFlowTable() {
   const visibleColumns = getVisibleColumns();
 
   if (!state.currentWeek?.detailRows?.length) {
-    context.textContent = "Current week flow table with selected comparison week.";
+    context.textContent = "Current period flow-level performance compared with the selected comparison period.";
     thead.innerHTML = "";
     tbody.innerHTML = '<tr><td class="empty-cell">Repository-backed flow data is not available yet.</td></tr>';
     return;
@@ -383,11 +400,13 @@ function renderFlowTable() {
     ? `Current: ${state.currentWeek.weekLabel} · Compare: ${state.priorWeek.weekLabel}`
     : `Current: ${state.currentWeek.weekLabel}`;
 
-  thead.innerHTML = `<tr>${visibleColumns.map((column) => {
-    const active = state.sortKey === column.key;
-    const arrow = active ? (state.sortDirection === "asc" ? " ↑" : " ↓") : "";
-    return `<th><button type="button" data-sort-key="${column.key}">${escapeHtml(column.label)}${arrow}</button></th>`;
-  }).join("")}</tr>`;
+  thead.innerHTML = `<tr>${visibleColumns
+    .map((column) => {
+      const active = state.sortKey === column.key;
+      const arrow = active ? (state.sortDirection === "asc" ? " ↑" : " ↓") : "";
+      return `<th><button type="button" data-sort-key="${column.key}">${escapeHtml(column.label)}${arrow}</button></th>`;
+    })
+    .join("")}</tr>`;
 
   thead.querySelectorAll("button[data-sort-key]").forEach((button) => {
     button.addEventListener("click", () => handleSort(button.dataset.sortKey));
@@ -398,11 +417,15 @@ function renderFlowTable() {
     return;
   }
 
-  tbody.innerHTML = state.filteredRows.map((row) => `
-    <tr>
-      ${visibleColumns.map((column) => renderTableCell(row, column)).join("")}
-    </tr>
-  `).join("");
+  tbody.innerHTML = state.filteredRows
+    .map(
+      (row) => `
+      <tr>
+        ${visibleColumns.map((column) => renderTableCell(row, column)).join("")}
+      </tr>
+    `
+    )
+    .join("");
 }
 
 function renderTableCell(row, column) {
@@ -463,12 +486,16 @@ function renderTrendCharts() {
     return;
   }
 
-  container.innerHTML = trendMetrics.map((metric) => `
-    <div class="chart-card">
-      <h3>${escapeHtml(metric.label)}</h3>
-      <div class="line-chart">${renderLineSvg(weekSeries, metric)}</div>
-    </div>
-  `).join("");
+  container.innerHTML = trendMetrics
+    .map(
+      (metric) => `
+      <div class="chart-card">
+        <h3>${escapeHtml(metric.label)}</h3>
+        <div class="line-chart">${renderLineSvg(weekSeries, metric)}</div>
+      </div>
+    `
+    )
+    .join("");
 }
 
 function buildShareData(valueKey) {
@@ -488,13 +515,17 @@ function renderBarChart(container, data) {
   }
 
   container.classList.remove("empty-chart");
-  container.innerHTML = data.map((item) => `
-    <div class="bar-row">
-      <div class="bar-label" title="${escapeAttribute(item.label)}">${escapeHtml(item.label)}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.max(item.share * 100, 0)}%"></div></div>
-      <div class="bar-value">${escapeHtml(formatPercent(item.share))}</div>
-    </div>
-  `).join("");
+  container.innerHTML = data
+    .map(
+      (item) => `
+      <div class="bar-row">
+        <div class="bar-label" title="${escapeAttribute(item.label)}">${escapeHtml(item.label)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.max(item.share * 100, 0)}%"></div></div>
+        <div class="bar-value">${escapeHtml(formatPercent(item.share))}</div>
+      </div>
+    `
+    )
+    .join("");
 }
 
 function renderScatterChart({ element, rows, xKey, yKey, sizeKey, xLabel, yLabel, yType }) {
@@ -524,59 +555,83 @@ function renderScatterChart({ element, rows, xKey, yKey, sizeKey, xLabel, yLabel
   const scaleY = (value) => padding.top + innerHeight - (safeDivide(value, yMax) || 0) * innerHeight;
   const scaleR = (value) => 8 + Math.sqrt((toNumber(value) || 0) / sizeMax) * 28;
 
-  const gridLines = [0.25, 0.5, 0.75, 1].map((factor) => {
-    const x = padding.left + innerWidth * factor;
-    const y = padding.top + innerHeight - innerHeight * factor;
-    return `
+  const gridLines = [0.25, 0.5, 0.75, 1]
+    .map((factor) => {
+      const x = padding.left + innerWidth * factor;
+      const y = padding.top + innerHeight - innerHeight * factor;
+      return `
       <line class="grid-line" x1="${x}" y1="${padding.top}" x2="${x}" y2="${padding.top + innerHeight}"></line>
       <line class="grid-line" x1="${padding.left}" y1="${y}" x2="${padding.left + innerWidth}" y2="${y}"></line>
     `;
-  }).join("");
+    })
+    .join("");
 
-  const bubbles = cleanRows.map((row) => {
-    const cx = scaleX(row[xKey]);
-    const cy = scaleY(row[yKey]);
-    const r = scaleR(row[sizeKey]);
-    const tooltip = `${row.flow}\n${xLabel}: ${formatValue(row[xKey], "rate")}\n${yLabel}: ${formatValue(row[yKey], yType)}\nSize: ${formatValue(row[sizeKey], "number")}`;
-    return `
+  const bubbles = cleanRows
+    .map((row) => {
+      const cx = scaleX(row[xKey]);
+      const cy = scaleY(row[yKey]);
+      const r = scaleR(row[sizeKey]);
+      const tooltip = `${row.flow}\n${xLabel}: ${formatValue(row[xKey], "rate")}\n${yLabel}: ${formatValue(
+        row[yKey],
+        yType
+      )}\nSize: ${formatValue(row[sizeKey], "number")}`;
+      return `
       <g>
         <title>${escapeHtml(tooltip)}</title>
         <circle class="bubble" cx="${cx}" cy="${cy}" r="${r}"></circle>
         <text class="bubble-text" x="${cx}" y="${cy + 4}" text-anchor="middle">${escapeHtml(shortFlow(row.flow))}</text>
       </g>
     `;
-  }).join("");
+    })
+    .join("");
 
-  const xTicks = [0, 0.25, 0.5, 0.75, 1].map((factor) => {
-    const value = xMax * factor;
-    const x = padding.left + innerWidth * factor;
-    return `<text class="axis-label" x="${x}" y="${height - 24}" text-anchor="middle">${escapeHtml(formatValue(value, "rate"))}</text>`;
-  }).join("");
+  const xTicks = [0, 0.25, 0.5, 0.75, 1]
+    .map((factor) => {
+      const value = xMax * factor;
+      const x = padding.left + innerWidth * factor;
+      return `<text class="axis-label" x="${x}" y="${height - 24}" text-anchor="middle">${escapeHtml(
+        formatValue(value, "rate")
+      )}</text>`;
+    })
+    .join("");
 
-  const yTicks = [0, 0.25, 0.5, 0.75, 1].map((factor) => {
-    const value = yMax * factor;
-    const y = padding.top + innerHeight - innerHeight * factor;
-    return `<text class="axis-label" x="${padding.left - 12}" y="${y + 4}" text-anchor="end">${escapeHtml(formatValue(value, yType))}</text>`;
-  }).join("");
+  const yTicks = [0, 0.25, 0.5, 0.75, 1]
+    .map((factor) => {
+      const value = yMax * factor;
+      const y = padding.top + innerHeight - innerHeight * factor;
+      return `<text class="axis-label" x="${padding.left - 12}" y="${y + 4}" text-anchor="end">${escapeHtml(
+        formatValue(value, yType)
+      )}</text>`;
+    })
+    .join("");
 
   element.classList.remove("empty-chart");
   element.innerHTML = `
-    <svg class="scatter-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeAttribute(xLabel)} and ${escapeAttribute(yLabel)} bubble chart">
+    <svg class="scatter-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeAttribute(
+      xLabel
+    )} and ${escapeAttribute(yLabel)} bubble chart">
       ${gridLines}
       <line class="grid-line" x1="${padding.left}" y1="${padding.top + innerHeight}" x2="${padding.left + innerWidth}" y2="${padding.top + innerHeight}"></line>
       <line class="grid-line" x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${padding.top + innerHeight}"></line>
       ${bubbles}
       ${xTicks}
       ${yTicks}
-      <text class="axis-label" x="${padding.left + innerWidth / 2}" y="${height - 4}" text-anchor="middle">${escapeHtml(xLabel)}</text>
-      <text class="axis-label" x="18" y="${padding.top + innerHeight / 2}" text-anchor="middle" transform="rotate(-90 18 ${padding.top + innerHeight / 2})">${escapeHtml(yLabel)}</text>
+      <text class="axis-label" x="${padding.left + innerWidth / 2}" y="${height - 4}" text-anchor="middle">${escapeHtml(
+        xLabel
+      )}</text>
+      <text class="axis-label" x="18" y="${padding.top + innerHeight / 2}" text-anchor="middle" transform="rotate(-90 18 ${
+        padding.top + innerHeight / 2
+      })">${escapeHtml(yLabel)}</text>
     </svg>
     <p class="legend-note">Hover bubbles for metric details.</p>
   `;
 }
 
 function renderLineSvg(series, metric) {
-  const points = series.map((item) => ({ label: item.label, value: item.summary[metric.key] })).filter((item) => item.value !== null && item.value !== undefined);
+  const points = series
+    .map((item) => ({ label: item.label, value: item.summary[metric.key] }))
+    .filter((item) => item.value !== null && item.value !== undefined);
+
   if (!points.length) return '<div class="empty-chart">No data available.</div>';
 
   const width = 620;
@@ -586,40 +641,60 @@ function renderLineSvg(series, metric) {
   const innerHeight = height - padding.top - padding.bottom;
   const maxValue = Math.max(...points.map((point) => toNumber(point.value) || 0), 0.01);
 
-  const scaleX = (index) => padding.left + (points.length === 1 ? innerWidth / 2 : (index / (points.length - 1)) * innerWidth);
+  const scaleX = (index) =>
+    padding.left + (points.length === 1 ? innerWidth / 2 : (index / (points.length - 1)) * innerWidth);
   const scaleY = (value) => padding.top + innerHeight - (safeDivide(value, maxValue) || 0) * innerHeight;
 
-  const path = points.map((point, index) => `${index === 0 ? "M" : "L"}${scaleX(index)} ${scaleY(point.value)}`).join(" ");
+  const path = points
+    .map((point, index) => `${index === 0 ? "M" : "L"}${scaleX(index)} ${scaleY(point.value)}`)
+    .join(" ");
 
-  const gridLines = [0.25, 0.5, 0.75, 1].map((factor) => {
-    const y = padding.top + innerHeight - innerHeight * factor;
-    return `<line class="grid-line" x1="${padding.left}" y1="${y}" x2="${padding.left + innerWidth}" y2="${y}"></line>`;
-  }).join("");
+  const gridLines = [0.25, 0.5, 0.75, 1]
+    .map((factor) => {
+      const y = padding.top + innerHeight - innerHeight * factor;
+      return `<line class="grid-line" x1="${padding.left}" y1="${y}" x2="${padding.left + innerWidth}" y2="${y}"></line>`;
+    })
+    .join("");
 
-  const dots = points.map((point, index) => {
-    const x = scaleX(index);
-    const y = scaleY(point.value);
-    return `
+  const dots = points
+    .map((point, index) => {
+      const x = scaleX(index);
+      const y = scaleY(point.value);
+      return `
       <g>
         <title>${escapeHtml(`${point.label}: ${formatValue(point.value, metric.type)}`)}</title>
         <circle class="line-dot" cx="${x}" cy="${y}" r="4"></circle>
-        <text class="line-value" x="${x}" y="${y - 10}" text-anchor="middle">${escapeHtml(formatValue(point.value, metric.type))}</text>
+        <text class="line-value" x="${x}" y="${y - 10}" text-anchor="middle">${escapeHtml(
+        formatValue(point.value, metric.type)
+      )}</text>
       </g>
     `;
-  }).join("");
+    })
+    .join("");
 
-  const xTicks = points.map((point, index) =>
-    `<text class="tick-label" x="${scaleX(index)}" y="${height - 18}" text-anchor="middle">${escapeHtml(point.label)}</text>`
-  ).join("");
+  const xTicks = points
+    .map(
+      (point, index) =>
+        `<text class="tick-label" x="${scaleX(index)}" y="${height - 18}" text-anchor="middle">${escapeHtml(
+          point.label
+        )}</text>`
+    )
+    .join("");
 
-  const yTicks = [0, 0.25, 0.5, 0.75, 1].map((factor) => {
-    const value = maxValue * factor;
-    const y = padding.top + innerHeight - innerHeight * factor;
-    return `<text class="tick-label" x="${padding.left - 10}" y="${y + 4}" text-anchor="end">${escapeHtml(formatValue(value, metric.type))}</text>`;
-  }).join("");
+  const yTicks = [0, 0.25, 0.5, 0.75, 1]
+    .map((factor) => {
+      const value = maxValue * factor;
+      const y = padding.top + innerHeight - innerHeight * factor;
+      return `<text class="tick-label" x="${padding.left - 10}" y="${y + 4}" text-anchor="end">${escapeHtml(
+        formatValue(value, metric.type)
+      )}</text>`;
+    })
+    .join("");
 
   return `
-    <svg class="line-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeAttribute(metric.label)} trend chart">
+    <svg class="line-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeAttribute(
+      metric.label
+    )} trend chart">
       ${gridLines}
       <line class="grid-line" x1="${padding.left}" y1="${padding.top + innerHeight}" x2="${padding.left + innerWidth}" y2="${padding.top + innerHeight}"></line>
       <line class="grid-line" x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${padding.top + innerHeight}"></line>
@@ -661,13 +736,19 @@ function renderColumnPanel() {
         <p>Drag to reorder. Uncheck to hide.</p>
       </div>
       <div class="column-list">
-        ${state.columns.map((column) => `
+        ${state.columns
+          .map(
+            (column) => `
           <label class="column-item" draggable="true" data-column-key="${escapeAttribute(column.key)}">
             <span class="drag-handle">⋮⋮</span>
-            <input type="checkbox" data-column-toggle="${escapeAttribute(column.key)}" ${column.visible !== false ? "checked" : ""}>
+            <input type="checkbox" data-column-toggle="${escapeAttribute(column.key)}" ${
+              column.visible !== false ? "checked" : ""
+            }>
             <span>${escapeHtml(column.label)}</span>
           </label>
-        `).join("")}
+        `
+          )
+          .join("")}
       </div>
     </div>
   `;
@@ -731,9 +812,8 @@ function getVisibleColumns() {
 function loadColumnPrefs() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return defaultColumns.map((column) => ({ ...column, visible: true }));
-    }
+    if (!raw) return defaultColumns.map((column) => ({ ...column, visible: true }));
+
     const parsed = JSON.parse(raw);
     const merged = defaultColumns.map((base) => {
       const matched = parsed.find((item) => item.key === base.key);
@@ -748,6 +828,7 @@ function loadColumnPrefs() {
     merged.forEach((item) => {
       if (!ordered.some((entry) => entry.key === item.key)) ordered.push(item);
     });
+
     return ordered;
   } catch {
     return defaultColumns.map((column) => ({ ...column, visible: true }));
@@ -755,10 +836,15 @@ function loadColumnPrefs() {
 }
 
 function persistColumnPrefs() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.columns.map((column) => ({
-    key: column.key,
-    visible: column.visible !== false,
-  }))));
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(
+      state.columns.map((column) => ({
+        key: column.key,
+        visible: column.visible !== false,
+      }))
+    )
+  );
 }
 
 function exportCurrentWeek() {
@@ -786,7 +872,8 @@ function handleSort(sortKey) {
 }
 
 function sortRows(rows, sortKey, direction) {
-  const column = state.columns.find((item) => item.key === sortKey) || defaultColumns.find((item) => item.key === sortKey);
+  const column =
+    state.columns.find((item) => item.key === sortKey) || defaultColumns.find((item) => item.key === sortKey);
   const type = column?.type || "text";
   const sorted = [...rows].sort((a, b) => compareValues(getSortableValue(a[sortKey], type), getSortableValue(b[sortKey], type), type));
   return direction === "asc" ? sorted : sorted.reverse();
@@ -812,7 +899,6 @@ function buildWowObject(currentValue, priorValue, type, inverse, hasPriorWeek, h
       absLabel: "—",
       pctLabel: "—",
       pctOnlyLabel: "—",
-      note: "",
       className: "wow-neutral",
       sortValue: Number.NEGATIVE_INFINITY,
       pctSortValue: Number.NEGATIVE_INFINITY,
@@ -825,7 +911,6 @@ function buildWowObject(currentValue, priorValue, type, inverse, hasPriorWeek, h
       absLabel: "new",
       pctLabel: "—",
       pctOnlyLabel: "—",
-      note: "",
       className: "wow-neutral",
       sortValue: Number.POSITIVE_INFINITY,
       pctSortValue: Number.POSITIVE_INFINITY,
@@ -835,12 +920,12 @@ function buildWowObject(currentValue, priorValue, type, inverse, hasPriorWeek, h
 
   const current = toNumber(currentValue);
   const prior = toNumber(priorValue);
+
   if (!Number.isFinite(current) || !Number.isFinite(prior)) {
     return {
       absLabel: "—",
       pctLabel: "—",
       pctOnlyLabel: "—",
-      note: "",
       className: "wow-neutral",
       sortValue: Number.NEGATIVE_INFINITY,
       pctSortValue: Number.NEGATIVE_INFINITY,
@@ -859,7 +944,6 @@ function buildWowObject(currentValue, priorValue, type, inverse, hasPriorWeek, h
     absLabel: formatDelta(abs, type),
     pctLabel: pct === null ? "—" : formatSignedPercent(pct),
     pctOnlyLabel: pct === null ? "—" : formatSignedPercent(pct),
-    note: "",
     className,
     sortValue: abs,
     pctSortValue: pct ?? Number.NEGATIVE_INFINITY,
@@ -902,6 +986,7 @@ function mapRow(raw) {
     unsubscribeRate: parsePercent(raw["Unsubscribe rate"]),
     orderUv,
     revenue,
+    clickCount,
     ctor: safeDivide(clickCount, openCount),
     arpu: safeDivide(revenue, deliveredCount),
     revenuePerOrder: safeDivide(revenue, orderUv),
