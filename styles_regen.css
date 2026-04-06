@@ -123,6 +123,14 @@ button, input, select { font: inherit; }
   padding: 22px;
 }
 
+.section-overview {
+  max-width: 100%;
+}
+
+.section-overview .metric-grid {
+  max-width: 1120px;
+}
+
 .section-head {
   display: flex;
   justify-content: space-between;
@@ -158,16 +166,17 @@ button, input, select { font: inherit; }
 
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(5, minmax(180px, 1fr));
+  gap: 10px;
+  align-items: stretch;
 }
 
 .metric-card {
-  padding: 12px 12px 14px;
+  padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
-  min-height: 112px;
+  min-height: 104px;
 }
 
 .metric-label {
@@ -397,9 +406,9 @@ tbody tr:hover { background: #f8fbfe; }
     grid-template-columns: 1fr;
   }
 
-  .metric-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+ .metric-grid {
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
+}
 }
 
 @media (max-width: 720px) {
@@ -419,4 +428,62 @@ tbody tr:hover { background: #f8fbfe; }
     align-items: start;
     flex-direction: column;
   }
+}
+
+.metric-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.metric-values {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.metric-current {
+  display: grid;
+  gap: 2px;
+}
+
+.metric-compare {
+  display: grid;
+  gap: 2px;
+}
+
+.metric-current-label,
+.metric-compare-label {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.1;
+}
+
+.metric-current-value {
+  font-size: clamp(18px, 2vw, 26px);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.metric-compare-value {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+.metric-wow-side {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.metric-wow-side .metric-wow-arrow {
+  font-size: 14px;
+  line-height: 1;
 }
