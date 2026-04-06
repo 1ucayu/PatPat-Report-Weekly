@@ -329,15 +329,37 @@ function renderOverview() {
   container.innerHTML = overviewMetrics.map((metric) => {
     const currentValue = state.currentWeek.summary[metric.key];
     const priorValue = state.priorWeek?.summary ? state.priorWeek.summary[metric.key] : null;
-    const wow = buildWowObject(currentValue, priorValue, metric.type, metric.inverse, Boolean(state.priorWeek), Boolean(state.priorWeek?.summary));
+
+    const wow = buildWowObject(
+      currentValue,
+      priorValue,
+      metric.type,
+      metric.inverse,
+      Boolean(state.priorWeek),
+      Boolean(state.priorWeek?.summary)
+    );
 
     return `
       <article class="metric-card compact">
         <p class="metric-label">${escapeHtml(metric.label)}</p>
-        <p class="metric-value">${escapeHtml(formatValue(currentValue, metric.type))}</p>
-        <div class="metric-wow ${wow.className}">
-          <span class="metric-wow-arrow">${escapeHtml(wow.arrow)}</span>
-          <span class="metric-wow-value">${escapeHtml(wow.pctOnlyLabel)}</span>
+
+        <div class="metric-main-row">
+          <div class="metric-values">
+            <div class="metric-current">
+              <span class="metric-current-label">Current</span>
+              <span class="metric-current-value">${escapeHtml(formatValue(currentValue, metric.type))}</span>
+            </div>
+
+            <div class="metric-compare">
+              <span class="metric-compare-label">Compare</span>
+              <span class="metric-compare-value">${escapeHtml(formatValue(priorValue, metric.type))}</span>
+            </div>
+          </div>
+
+          <div class="metric-wow-side ${wow.className}">
+            <span class="metric-wow-arrow">${escapeHtml(wow.arrow)}</span>
+            <span class="metric-wow-value">${escapeHtml(wow.pctOnlyLabel)}</span>
+          </div>
         </div>
       </article>
     `;
