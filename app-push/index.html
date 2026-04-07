@@ -28,11 +28,11 @@
           <div>
             <p class="section-kicker">Section 01</p>
             <h2 class="section-title">Global Filters</h2>
-            <p class="section-sub">Select the current period, comparison period, and push classification view.</p>
+            <p class="section-sub">Select the current period and comparison period.</p>
           </div>
         </div>
         <div class="section-body">
-          <div class="filter-grid">
+          <div class="filter-grid date-filter-grid">
             <label class="control">
               <span>Current Start</span>
               <input id="currentStart" type="date" />
@@ -51,20 +51,6 @@
             <label class="control">
               <span>Compare End</span>
               <input id="compareEnd" type="date" />
-            </label>
-
-            <label class="control">
-              <span>Push Name</span>
-              <select id="pushTypeFilter">
-                <option value="all">All Push</option>
-                <option value="current">Current Push</option>
-                <option value="previous">Previous</option>
-              </select>
-            </label>
-
-            <label class="control">
-              <span>Search Push</span>
-              <input id="pushSearch" type="search" placeholder="Search push name" />
             </label>
           </div>
 
@@ -95,53 +81,53 @@
 
       <!-- Section 03 -->
       <section class="section">
-  <div class="section-head">
-    <div>
-      <p class="section-kicker">Section 03</p>
-      <h2 class="section-title">Push Performance</h2>
-      <p id="pushTableContext" class="section-sub">
-        Push-level performance based on selected period and push classification.
-      </p>
-    </div>
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Section 03</p>
+            <h2 class="section-title">Push Performance</h2>
+            <p id="pushTableContext" class="section-sub">
+              Push-level performance based on selected period and push classification.
+            </p>
+          </div>
+        </div>
 
-    <div class="section-actions">
-      <label class="control compact-control">
-        <span>Push Category</span>
-        <select id="pushCategoryFilter">
-          <option value="all">All</option>
-          <option value="manual">Manual Push</option>
-          <option value="automation">Automation Push</option>
-        </select>
-      </label>
+        <div class="section-body">
+          <div class="section-control-row">
+            <label class="control compact-control">
+              <span>Push Category</span>
+              <select id="pushCategoryFilter">
+                <option value="all">All</option>
+                <option value="manual">Manual Push</option>
+                <option value="automation">Automation Push</option>
+              </select>
+            </label>
 
-      <label class="control compact-control">
-        <span>Search Push</span>
-        <input id="pushSearch" type="search" placeholder="Search push name" />
-      </label>
+            <label class="control compact-control">
+              <span>Search Push</span>
+              <input id="pushSearch" type="search" placeholder="Search push name" />
+            </label>
 
-      <label class="control compact-control">
-        <span>Zero Rows</span>
-        <select id="zeroRowFilter">
-          <option value="show">Show All Rows</option>
-          <option value="hide">Hide Zero Rows</option>
-        </select>
-      </label>
-    </div>
-  </div>
+            <label class="control compact-control">
+              <span>Zero Rows</span>
+              <select id="zeroRowFilter">
+                <option value="show">Show All Rows</option>
+                <option value="hide">Hide Zero Rows</option>
+              </select>
+            </label>
+          </div>
 
-  <div class="section-body">
-    <div class="table-wrap">
-      <table id="pushTable">
-        <thead></thead>
-        <tbody>
-          <tr>
-            <td class="empty-cell">Loading app-push table...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
+          <div class="table-wrap">
+            <table id="pushTable">
+              <thead></thead>
+              <tbody>
+                <tr>
+                  <td class="empty-cell">Loading app-push table...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
       <!-- Section 04 -->
       <section class="section">
