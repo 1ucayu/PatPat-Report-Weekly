@@ -475,3 +475,11 @@ tbody tr:hover {
     width: 100%;
   }
 }
+
+.compact-control {
+  min-width: 160px;
+}
+
+.compact-control span {
+  font-size: 11px;
+}
