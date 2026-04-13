@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fulfillment Email Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./fullfillment-email.css" />
+</head>
+<body>
+  <nav class="dashboard-nav">
+    <a href="../index.html" class="nav-link">Home</a>
+    <span class="nav-separator">/</span>
+    <span class="nav-current">Fulfillment Email</span>
+    <span class="nav-separator">/</span>
+    <a href="../app-push/index.html" class="nav-link">APP Push</a>
+  </nav>
+  <div class="page-shell">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-main">
+        <p class="eyebrow">Fulfillment Email Dashboard</p>
+        <h1 class="page-title">Weekly Performance Report</h1>
+        <p id="headerSummary" class="page-summary">
+          Current Period: -- ｜ Compare Period: -- ｜ Source: Repository CSV
+        </p>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <!-- Section 01: Global Filters -->
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Section 01</p>
+            <h2 class="section-title">Global Filters</h2>
+            <p class="section-sub">Choose the current and comparison periods before reviewing performance.</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="filter-grid">
+            <label class="control">
+              <span>Current Week</span>
+              <select id="weekSelect">
+                <option value="">Loading weeks...</option>
+              </select>
+            </label>
+
+            <label class="control">
+              <span>Compare Week</span>
+              <select id="compareWeekSelect">
+                <option value="">Loading weeks...</option>
+              </select>
+            </label>
+
+            <label class="control">
+              <span>Search Flow</span>
+              <input id="flowSearch" type="search" placeholder="Search flow name" />
+            </label>
+
+            <label class="control">
+              <span>Filter Flow</span>
+              <select id="flowFilter">
+                <option value="">All flows</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="filter-actions">
+            <button id="exportWeekButton" class="secondary-button" type="button">Export Current Week</button>
+          </div>
+
+          <p id="fileMeta" class="section-note">Loading repository data...</p>
+        </div>
+      </section>
+
+      <!-- Section 02: Weekly Overview -->
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Section 02</p>
+            <h2 class="section-title">Weekly Overview</h2>
+            <p id="overviewContext" class="section-sub">Current period KPI summary and period-over-period movement.</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <div id="overviewGrid" class="overview-grid">
+            <div class="empty-state">Loading weekly KPI data from the repository.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 03: Flow Performance -->
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Section 03</p>
+            <h2 class="section-title">Flow Performance</h2>
+            <p id="flowContext" class="section-sub">Current period flow-level performance compared with the selected comparison period.</p>
+          </div>
+          <div class="section-actions">
+            <button id="toggleColumnsButton" class="secondary-button" type="button">Customize Columns</button>
+            <button id="resetColumnsButton" class="danger-button" type="button">Reset Columns</button>
+          </div>
+        </div>
+        <div class="section-body">
+          <div id="columnPanel" class="column-panel hidden"></div>
+          <div class="table-wrap">
+            <table id="flowTable">
+              <thead></thead>
+              <tbody>
+                <tr>
+                  <td class="empty-cell">Loading repository-backed flow performance.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 04: Contribution Analysis -->
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Section 04</p>
+            <h2 class="section-title">Contribution Analysis</h2>
+            <p class="section-sub">Flow contribution split based on the selected current period and active filters.</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="chart-grid contribution-grid">
+            <div class="chart-card">
+              <h3>Click Share by Flow</h3>
+              <div id="clickShareChart" class="bar-chart empty-chart"></div>
+            </div>
+            <div class="chart-card">
+              <h3>Revenue Share by Flow</h3>
+              <div id="revenueShareChart" class="bar-chart empty-chart"></div>
+            </div>
+            <div class="chart-card">
+              <h3>Order UV Share by Flow</h3>
+              <div id="orderShareChart" class="bar-chart empty-chart"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 05: Efficiency Analysis -->
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Section 05</p>
+            <h2 class="section-title">Efficiency Analysis</h2>
+            <p class="section-sub">Use flow-level efficiency charts to identify outperformers and weak performers.</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="chart-grid efficiency-grid">
+            <div class="chart-card">
+              <h3>Open Rate vs CTOR</h3>
+              <p class="chart-caption">Bubble size = 发送数</p>
+              <div id="efficiencyChartOne" class="scatter-chart empty-chart"></div>
+            </div>
+            <div class="chart-card">
+              <h3>Click Rate vs 客净利</h3>
+              <p class="chart-caption">Bubble size = 送达数</p>
+              <div id="efficiencyChartTwo" class="scatter-chart empty-chart"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 06: Weekly Trends -->
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Section 06</p>
+            <h2 class="section-title">Weekly Trends</h2>
+            <p class="section-sub">Trend lines are ordered by parsed week number for accurate multi-week comparison.</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <div id="trendGrid" class="chart-grid trends-grid">
+            <div class="chart-card empty-chart">Loading weekly trends from the repository.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 07: Notes / Validation -->
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Section 07</p>
+            <h2 class="section-title">Notes / Validation</h2>
+            <p class="section-sub">Metric definitions, allocation rules, and data caveats.</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="note-box">
+            <ul>
+              <li>Open Rate = Emails Opened / Emails Delivered</li>
+              <li>Click Rate = Emails Clicked / Emails Delivered</li>
+              <li>CTOR = Emails Clicked / Emails Opened</li>
+              <li>Unsubscribe Rate = Unsubscribed / Emails Delivered</li>
+              <li>ARPU = Revenue / Delivered</li>
+              <li>客净利 = Revenue / Order UV</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./fullfillment-email.js"></script>
+</body>
+</html>
