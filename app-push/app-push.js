@@ -603,7 +603,8 @@ function renderBarChart(container, data) {
 function renderTrendCharts() {
   const container = document.getElementById("trendGrid");
   const filteredAllTimeRows = getAllTimeRowsForTrend();
-  const weeklySeries = buildWeeklySeries(filteredAllTimeRows);
+  const allWeeks = buildWeeklySeries(filteredAllTimeRows);
+  const weeklySeries = allWeeks.slice(-4);
 
   if (!weeklySeries.length) {
     container.innerHTML = '<div class="chart-card empty-chart">No weekly trend data available for the current filters.</div>';
@@ -690,9 +691,9 @@ function renderLineSvg(series, metric) {
 
   if (!points.length) return '<div class="empty-chart">No data available.</div>';
 
-  const width = 620;
+  const width = 820;
   const height = 260;
-  const padding = { top: 20, right: 20, bottom: 52, left: 58 };
+  const padding = { top: 20, right: 60, bottom: 52, left: 58 };
   const innerWidth = width - padding.left - padding.right;
   const innerHeight = height - padding.top - padding.bottom;
   const maxValue = Math.max(...points.map((point) => toNumber(point.value) || 0), 0.01);
@@ -718,10 +719,9 @@ function renderLineSvg(series, metric) {
     return `<g class="chart-tip" data-label="${escapeHtml(point.label)}" data-value="${escapeHtml(formatValue(point.value, metric.type))}"><circle cx="${x}" cy="${y}" r="16" fill="transparent"/><circle class="line-dot" cx="${x}" cy="${y}" r="4"/></g>`;
   }).join("");
 
-  const xTicks = tickIndexes.map((index) => {
-    const anchor = index === points.length - 1 ? "end" : index === 0 ? "start" : "middle";
-    return `<text class="tick-label" x="${scaleX(index)}" y="${height - 18}" text-anchor="${anchor}">${escapeHtml(points[index].label)}</text>`;
-  }).join("");
+  const xTicks = tickIndexes.map((index) =>
+    `<text class="tick-label" x="${scaleX(index)}" y="${height - 18}" text-anchor="middle">${escapeHtml(points[index].label)}</text>`
+  ).join("");
 
   const yTopLabel = `<text class="tick-label" x="${padding.left}" y="${padding.top - 4}" text-anchor="start">${escapeHtml(formatValue(maxValue, metric.type))}</text>`;
 

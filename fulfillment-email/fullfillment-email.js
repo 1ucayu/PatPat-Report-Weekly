@@ -478,9 +478,10 @@ function renderEfficiencyCharts() {
 
 function renderTrendCharts() {
   const container = document.getElementById("trendGrid");
-  const weekSeries = state.store.weekOrder
+  const allWeeks = state.store.weekOrder
     .map((label) => ({ label, summary: state.store.weeks[label]?.summary || null }))
     .filter((item) => item.summary);
+  const weekSeries = allWeeks.slice(-4);
 
   if (!weekSeries.length) {
     container.innerHTML = '<div class="chart-card empty-chart">Repository trend data is not available yet.</div>';
@@ -632,9 +633,9 @@ function renderLineSvg(series, metric) {
 
   if (!points.length) return '<div class="empty-chart">No data available.</div>';
 
-  const width = 620;
+  const width = 820;
   const height = 260;
-  const padding = { top: 20, right: 20, bottom: 52, left: 58 };
+  const padding = { top: 20, right: 60, bottom: 52, left: 58 };
   const innerWidth = width - padding.left - padding.right;
   const innerHeight = height - padding.top - padding.bottom;
   const maxValue = Math.max(...points.map((point) => toNumber(point.value) || 0), 0.01);
@@ -671,12 +672,11 @@ function renderLineSvg(series, metric) {
     .join("");
 
   const xTicks = points
-    .map((point, index) => {
-      const anchor = index === points.length - 1 ? "end" : index === 0 ? "start" : "middle";
-      return `<text class="tick-label" x="${scaleX(index)}" y="${height - 18}" text-anchor="${anchor}">${escapeHtml(
+    .map((point, index) =>
+      `<text class="tick-label" x="${scaleX(index)}" y="${height - 18}" text-anchor="middle">${escapeHtml(
         point.label
-      )}</text>`;
-    })
+      )}</text>`
+    )
     .join("");
 
   const yTicks = [0, 0.25, 0.5, 0.75, 1]
