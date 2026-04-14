@@ -718,9 +718,10 @@ function renderLineSvg(series, metric) {
     return `<g class="chart-tip" data-label="${escapeHtml(point.label)}" data-value="${escapeHtml(formatValue(point.value, metric.type))}"><circle cx="${x}" cy="${y}" r="16" fill="transparent"/><circle class="line-dot" cx="${x}" cy="${y}" r="4"/></g>`;
   }).join("");
 
-  const xTicks = tickIndexes.map((index) =>
-    `<text class="tick-label" x="${scaleX(index)}" y="${height - 18}" text-anchor="middle">${escapeHtml(points[index].label)}</text>`
-  ).join("");
+  const xTicks = tickIndexes.map((index) => {
+    const anchor = index === points.length - 1 ? "end" : index === 0 ? "start" : "middle";
+    return `<text class="tick-label" x="${scaleX(index)}" y="${height - 18}" text-anchor="${anchor}">${escapeHtml(points[index].label)}</text>`;
+  }).join("");
 
   const yTopLabel = `<text class="tick-label" x="${padding.left}" y="${padding.top - 4}" text-anchor="start">${escapeHtml(formatValue(maxValue, metric.type))}</text>`;
 

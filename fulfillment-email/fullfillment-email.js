@@ -671,12 +671,12 @@ function renderLineSvg(series, metric) {
     .join("");
 
   const xTicks = points
-    .map(
-      (point, index) =>
-        `<text class="tick-label" x="${scaleX(index)}" y="${height - 18}" text-anchor="middle">${escapeHtml(
-          point.label
-        )}</text>`
-    )
+    .map((point, index) => {
+      const anchor = index === points.length - 1 ? "end" : index === 0 ? "start" : "middle";
+      return `<text class="tick-label" x="${scaleX(index)}" y="${height - 18}" text-anchor="${anchor}">${escapeHtml(
+        point.label
+      )}</text>`;
+    })
     .join("");
 
   const yTicks = [0, 0.25, 0.5, 0.75, 1]
