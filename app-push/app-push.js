@@ -407,7 +407,9 @@ function getCompareRows() {
   const compareEnd = parseInputDate(state.compareEnd);
   if (!compareStart || !compareEnd) return [];
 
-  return state.classifiedRows.filter((row) => isRowIncluded(row, compareStart, compareEnd));
+  return state.rawRows
+    .map((row) => classifyRow(row, compareStart, compareEnd))
+    .filter((row) => isRowIncluded(row, compareStart, compareEnd));
 }
 
 function aggregateRows(rows) {
@@ -639,7 +641,13 @@ function buildWeeklySeries(rows) {
     .sort((a, b) => a - b);
 
   const firstWeekStart = getSunday(sortedDates[0]);
-  const lastWeekEnd = getSaturday(sortedDates[sortedDates.length - 1]);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const lastCompleteSaturday = getPreviousOrSameSaturday(today);
+  const dataLastSaturday = getSaturday(sortedDates[sortedDates.length - 1]);
+  const lastWeekEnd = lastCompleteSaturday < dataLastSaturday
+    ? lastCompleteSaturday
+    : dataLastSaturday;
   const weekMap = new Map();
 
   const cursor = new Date(firstWeekStart);
