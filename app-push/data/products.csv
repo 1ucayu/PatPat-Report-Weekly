@@ -1,0 +1,10 @@
+# ----------------------------------------
+# patpat-app+web
+# Products table B: joins to main on `transaction ID`.
+# A single transaction ID may appear multiple times — once per product.
+# ----------------------------------------
+
+transaction ID,Product title,Orders
+TXN-EXAMPLE-001,Sample Product A,1
+TXN-EXAMPLE-001,Sample Product B,1
+TXN-EXAMPLE-002,Sample Product C,1
